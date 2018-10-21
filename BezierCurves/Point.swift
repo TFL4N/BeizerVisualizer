@@ -45,6 +45,28 @@ class Point: NSObject, NSCoding {
         aCoder.encode(self.x, forKey: "point_x")
         aCoder.encode(self.y, forKey: "point_y")
     }
+    
+    override func setNilValueForKey(_ key: String) {
+        if key == "x" {
+            self.x = 0.0
+            return
+        } else if key == "y" {
+            self.y = 0.0
+            return
+        }
+        
+        super.setNilValueForKey(key)
+    }
+    
+    func registerObserver(_ object: NSObject) {
+        self.addObserver(object, forKeyPath: "x", options: .new, context: nil)
+        self.addObserver(object, forKeyPath: "y", options: .new, context: nil)
+    }
+    
+    func unregisterObserver(_ object: NSObject) {
+        self.removeObserver(object, forKeyPath: "x")
+        self.removeObserver(object, forKeyPath: "y")
+    }
 }
 
 

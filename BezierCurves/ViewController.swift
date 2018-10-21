@@ -32,10 +32,6 @@ class ViewController: NSViewController {
         }
     }
     
-    var document: Document? {
-        return self.view.window?.windowController?.document as? Document
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -48,7 +44,7 @@ class ViewController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         
-        self.graph_display.refresh()
+        self.graph_display.document = self.document
         
         if self.needsBindings {
             self.needsBindings = false
@@ -101,10 +97,13 @@ class ViewController: NSViewController {
         }
     }
 
-    @IBAction func foo(_ sender: Any?) {
-        self.output_textview.string = "\(self.document!.bezier_curve.p0)"
+    @IBAction func handleShowSettingsPress(_ sender: Any?) {
+        self.document?.showSettingsViewController()
     }
 
+    @IBAction func handleSquareGridPress(_ sender: Any?) {
+        self.document!.settings.display_bounds.x = (self.document!.settings.display_bounds.y * Double(self.graph_display.bounds.width)) / Double(self.graph_display.bounds.height)
+    }
 }
 
 extension NumberFormatter {

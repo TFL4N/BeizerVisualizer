@@ -17,6 +17,8 @@
 		65215676217BE65100EF3F9C /* BezierCurve.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65215675217BE65100EF3F9C /* BezierCurve.swift */; };
 		6521567B217BFE9200EF3F9C /* DisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521567A217BFE9200EF3F9C /* DisplayView.swift */; };
 		6521567D217C28E700EF3F9C /* Point.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521567C217C28E700EF3F9C /* Point.swift */; };
+		6521567F217C300B00EF3F9C /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521567E217C300B00EF3F9C /* SettingsViewController.swift */; };
+		65215681217C301500EF3F9C /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65215680217C301500EF3F9C /* Settings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +57,8 @@
 		65215678217BEAEA00EF3F9C /* BigNumber.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BigNumber.framework; path = ../../lib/BigNumber.framework; sourceTree = "<group>"; };
 		6521567A217BFE9200EF3F9C /* DisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayView.swift; sourceTree = "<group>"; };
 		6521567C217C28E700EF3F9C /* Point.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Point.swift; sourceTree = "<group>"; };
+		6521567E217C300B00EF3F9C /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		65215680217C301500EF3F9C /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +120,8 @@
 				65215675217BE65100EF3F9C /* BezierCurve.swift */,
 				6521567A217BFE9200EF3F9C /* DisplayView.swift */,
 				6521567C217C28E700EF3F9C /* Point.swift */,
+				6521567E217C300B00EF3F9C /* SettingsViewController.swift */,
+				65215680217C301500EF3F9C /* Settings.swift */,
 			);
 			path = BezierCurves;
 			sourceTree = "<group>";
@@ -283,6 +289,8 @@
 			files = (
 				6521564A217BDD2300EF3F9C /* ViewController.swift in Sources */,
 				65215648217BDD2300EF3F9C /* AppDelegate.swift in Sources */,
+				65215681217C301500EF3F9C /* Settings.swift in Sources */,
+				6521567F217C300B00EF3F9C /* SettingsViewController.swift in Sources */,
 				6521567D217C28E700EF3F9C /* Point.swift in Sources */,
 				65215676217BE65100EF3F9C /* BezierCurve.swift in Sources */,
 				6521567B217BFE9200EF3F9C /* DisplayView.swift in Sources */,

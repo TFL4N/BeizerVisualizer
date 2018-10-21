@@ -49,4 +49,18 @@ class CubicBezierCurve: NSObject, NSCoding {
         aCoder.encode(self.p2, forKey: "cubic_bezier_curve_p2")
         aCoder.encode(self.p3, forKey: "cubic_bezier_curve_p3")
     }
+    
+    func registerObserver(_ object: NSObject) {
+        self.p0.registerObserver(object)
+        self.p1.registerObserver(object)
+        self.p2.registerObserver(object)
+        self.p3.registerObserver(object)
+    }
+    
+    func unregisterObserver(_ object: NSObject) {
+        self.p0.unregisterObserver(object)
+        self.p1.unregisterObserver(object)
+        self.p2.unregisterObserver(object)
+        self.p3.unregisterObserver(object)
+    }
 }
