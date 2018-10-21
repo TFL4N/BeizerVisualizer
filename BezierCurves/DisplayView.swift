@@ -81,12 +81,13 @@ class DisplayView: NSView {
     private func getDenormalizedPoint(_ point: Point) -> CGPoint {
         var output = point.cgPoint
     
+        // adjust origin
+        output += self.settings.origin_offset.cgPoint
+        
         // adjust scale
         output.x *= self.x_scale
         output.y *= self.y_scale
         
-        // adjust origin
-        output += self.settings.origin_offset.cgPoint
         
         return output
     }
