@@ -14,6 +14,8 @@
 		65215651217BDD2400EF3F9C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6521564F217BDD2400EF3F9C /* Main.storyboard */; };
 		6521565D217BDD2400EF3F9C /* BezierCurvesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521565C217BDD2400EF3F9C /* BezierCurvesTests.swift */; };
 		65215668217BDD2400EF3F9C /* BezierCurvesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65215667217BDD2400EF3F9C /* BezierCurvesUITests.swift */; };
+		65215676217BE65100EF3F9C /* BezierCurve.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65215675217BE65100EF3F9C /* BezierCurve.swift */; };
+		6521567B217BFE9200EF3F9C /* DisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521567A217BFE9200EF3F9C /* DisplayView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +50,9 @@
 		65215663217BDD2400EF3F9C /* BezierCurvesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BezierCurvesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		65215667217BDD2400EF3F9C /* BezierCurvesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezierCurvesUITests.swift; sourceTree = "<group>"; };
 		65215669217BDD2400EF3F9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		65215675217BE65100EF3F9C /* BezierCurve.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezierCurve.swift; sourceTree = "<group>"; };
+		65215678217BEAEA00EF3F9C /* BigNumber.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BigNumber.framework; path = ../../lib/BigNumber.framework; sourceTree = "<group>"; };
+		6521567A217BFE9200EF3F9C /* DisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +87,7 @@
 				6521565B217BDD2400EF3F9C /* BezierCurvesTests */,
 				65215666217BDD2400EF3F9C /* BezierCurvesUITests */,
 				65215645217BDD2300EF3F9C /* Products */,
+				65215677217BEAEA00EF3F9C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -105,6 +111,8 @@
 				6521564F217BDD2400EF3F9C /* Main.storyboard */,
 				65215652217BDD2400EF3F9C /* Info.plist */,
 				65215653217BDD2400EF3F9C /* BezierCurves.entitlements */,
+				65215675217BE65100EF3F9C /* BezierCurve.swift */,
+				6521567A217BFE9200EF3F9C /* DisplayView.swift */,
 			);
 			path = BezierCurves;
 			sourceTree = "<group>";
@@ -125,6 +133,14 @@
 				65215669217BDD2400EF3F9C /* Info.plist */,
 			);
 			path = BezierCurvesUITests;
+			sourceTree = "<group>";
+		};
+		65215677217BEAEA00EF3F9C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				65215678217BEAEA00EF3F9C /* BigNumber.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -259,6 +275,8 @@
 			files = (
 				6521564A217BDD2300EF3F9C /* ViewController.swift in Sources */,
 				65215648217BDD2300EF3F9C /* AppDelegate.swift in Sources */,
+				65215676217BE65100EF3F9C /* BezierCurve.swift in Sources */,
+				6521567B217BFE9200EF3F9C /* DisplayView.swift in Sources */,
 				6521564C217BDD2300EF3F9C /* Document.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -426,13 +444,16 @@
 				CODE_SIGN_ENTITLEMENTS = BezierCurves/BezierCurves.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BezierCurves/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = spaice.maine.BezierCurves;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_INCLUDE_PATHS = "";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -444,13 +465,16 @@
 				CODE_SIGN_ENTITLEMENTS = BezierCurves/BezierCurves.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BezierCurves/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = spaice.maine.BezierCurves;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_INCLUDE_PATHS = "";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
