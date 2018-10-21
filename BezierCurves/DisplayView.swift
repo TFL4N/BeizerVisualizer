@@ -20,9 +20,28 @@ class DisplayView: NSView {
     var axis_line_width: CGFloat = 1.0
     var axis_line_color: CGColor = CGColor.black
     
+    var curve_line_width: CGFloat = 1.0
+    var curve_line_color: CGColor = CGColor.black
+    
     private var axis_layer: CAShapeLayer = CAShapeLayer()
     private var grid_layer: CAShapeLayer = CAShapeLayer()
+    private var curve_layer: CAShapeLayer = CAShapeLayer()
     
+    var document: Document? {
+        return self.window?.windowController?.document as? Document
+    }
+    
+    private var aspect_ratio: CGFloat {
+        return self.layer!.bounds.width / self.layer!.bounds.height
+    }
+    
+    private var x_scale: CGFloat {
+        return self.layer!.bounds.width / self.display_bounds.width
+    }
+    
+    private var y_scale: CGFloat {
+        return self.layer!.bounds.height / self.display_bounds.height
+    }
     
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -44,11 +63,61 @@ class DisplayView: NSView {
         self.layer = new_layer
         self.wantsLayer = true
         
-        let aspect_ratio = self.layer!.bounds.width / self.layer!.bounds.height
-        self.display_bounds.width *= aspect_ratio
+        self.display_bounds.width *= self.aspect_ratio
         
+        self.refresh()
+    }
+    
+    public func refresh() {
         self.updateGridLayer()
         self.updateAxisLayer()
+        self.updateBezierCurve()
+    }
+    
+    private func getDenormalizedPoint(_ point: Point) -> CGPoint {
+        var output = point.cgPoint
+    
+        // adjust scale
+        output.x *= self.x_scale
+        output.y *= self.y_scale
+        
+        // adjust origin
+        output += self.origin_offset
+        
+        return output
+    }
+    
+    private func updateBezierCurve() {
+        guard let document = self.document else {
+            if self.curve_layer.superlayer != nil {
+                self.curve_layer.removeFromSuperlayer()
+            }
+            
+            return
+        }
+        
+        let p0 = self.getDenormalizedPoint(document.bezier_curve.p0)
+        let p1 = self.getDenormalizedPoint(document.bezier_curve.p1)
+        let p2 = self.getDenormalizedPoint(document.bezier_curve.p2)
+        let p3 = self.getDenormalizedPoint(document.bezier_curve.p3)
+        
+        let curve_path = CGMutablePath()
+        curve_path.move(to: p0)
+        curve_path.addCurve(to: p3, control1: p1, control2: p2)
+        
+        //// shape
+        let curve_shape = CAShapeLayer()
+        curve_shape.path = curve_path
+        curve_shape.lineWidth = self.curve_line_width
+        curve_shape.fillColor = CGColor.clear
+        curve_shape.strokeColor = self.curve_line_color
+        
+        if self.curve_layer.superlayer != nil {
+            self.curve_layer.removeFromSuperlayer()
+        }
+        self.curve_layer = curve_shape
+        
+        self.layer!.addSublayer(self.curve_layer)
     }
     
     private func updateAxisLayer() {

@@ -10,7 +10,7 @@ import Cocoa
 
 class ViewController: NSViewController {
 
-    @IBOutlet var graph_display: NSView!
+    @IBOutlet var graph_display: DisplayView!
     
     @IBOutlet var output_textview: NSTextView!
     
@@ -47,6 +47,8 @@ class ViewController: NSViewController {
     private var needsBindings = true
     override func viewWillAppear() {
         super.viewWillAppear()
+        
+        self.graph_display.refresh()
         
         if self.needsBindings {
             self.needsBindings = false
