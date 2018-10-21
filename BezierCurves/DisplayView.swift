@@ -13,6 +13,22 @@ class DisplayView: NSView {
     private var grid_layer: CAShapeLayer = CAShapeLayer()
     private var curve_layer: CAShapeLayer = CAShapeLayer()
     
+    private var p0_layer: CAShapeLayer = CAShapeLayer()
+    private var p1_layer: CAShapeLayer = CAShapeLayer()
+    private var p2_layer: CAShapeLayer = CAShapeLayer()
+    private var p3_layer: CAShapeLayer = CAShapeLayer()
+    
+    private var q0_layer: CAShapeLayer = CAShapeLayer()
+    private var q1_layer: CAShapeLayer = CAShapeLayer()
+    private var q2_layer: CAShapeLayer = CAShapeLayer()
+    
+    private var r0_layer: CAShapeLayer = CAShapeLayer()
+    private var r1_layer: CAShapeLayer = CAShapeLayer()
+    
+    private var b_layer: CAShapeLayer = CAShapeLayer()
+    
+    private var control_point_size: CGFloat = 5.0
+    
     var document: Document? = nil {
         willSet {
             if let document = self.document {
@@ -70,12 +86,66 @@ class DisplayView: NSView {
         self.settings.display_bounds.x *= Double(self.aspect_ratio)
         
         self.refresh()
+        self.createControlPoints()
+    }
+    
+    public func toggleMainControlPoints() {
+        self.p0_layer.isHidden = !self.p0_layer.isHidden
+        self.p1_layer.isHidden = !self.p1_layer.isHidden
+        self.p2_layer.isHidden = !self.p2_layer.isHidden
+        self.p3_layer.isHidden = !self.p3_layer.isHidden
     }
     
     public func refresh() {
         self.updateGridLayer()
         self.updateAxisLayer()
         self.updateBezierCurve()
+    }
+    
+    private func enumerateControlPoints(_ f:(CAShapeLayer)->()) {
+        let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer, self.q0_layer, self.q1_layer, self.q2_layer, self.r0_layer, self.r1_layer, self.b_layer]
+        
+        for cp in control_points {
+            f(cp)
+        }
+    }
+    
+    private func createControlPoints() {
+        let circle_bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
+        
+        let createLayer = { () -> CAShapeLayer in
+            let path = CGPath(ellipseIn: circle_bounds, transform: nil)
+            
+            let layer = CAShapeLayer()
+            layer.path = path
+            layer.fillColor = CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
+            layer.zPosition = 1.0
+            
+            return layer
+        }
+        
+        self.p0_layer = createLayer()
+        self.p1_layer = createLayer()
+        self.p2_layer = createLayer()
+        self.p3_layer = createLayer()
+        
+        self.q0_layer = createLayer()
+        self.q1_layer = createLayer()
+        self.q2_layer = createLayer()
+        
+        self.r0_layer = createLayer()
+        self.r1_layer = createLayer()
+        
+        self.b_layer = createLayer()
+        
+        self.enumerateControlPoints { (cp) in
+            cp.setAffineTransform(CGAffineTransform(translationX: -self.control_point_size/2, y: -self.control_point_size/2))
+            cp.isHidden = true
+            cp.actions = [
+                "position" : NSNull()
+            ]
+            self.layer!.addSublayer(cp)
+        }
     }
     
     private func getDenormalizedPoint(_ point: Point) -> CGPoint {
@@ -105,6 +175,11 @@ class DisplayView: NSView {
         let p1 = self.getDenormalizedPoint(document.bezier_curve.p1)
         let p2 = self.getDenormalizedPoint(document.bezier_curve.p2)
         let p3 = self.getDenormalizedPoint(document.bezier_curve.p3)
+        
+        self.p0_layer.position = p0
+        self.p1_layer.position = p1
+        self.p2_layer.position = p2
+        self.p3_layer.position = p3
         
         let curve_path = CGMutablePath()
         curve_path.move(to: p0)

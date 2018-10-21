@@ -1258,7 +1258,7 @@
                                         </customSpacing>
                                     </stackView>
                                     <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="500" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kNn-eg-KoR">
-                                        <rect key="frame" x="0.0" y="143" width="300" height="21"/>
+                                        <rect key="frame" x="0.0" y="143" width="389" height="21"/>
                                         <subviews>
                                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="taY-h3-vkq">
                                                 <rect key="frame" x="-6" y="-7" width="127" height="32"/>
@@ -1281,11 +1281,14 @@
                                                 </connections>
                                             </button>
                                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tZJ-FI-zNb">
-                                                <rect key="frame" x="225" y="-7" width="81" height="32"/>
-                                                <buttonCell key="cell" type="push" title="Button" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XIt-ob-469">
+                                                <rect key="frame" x="225" y="-7" width="170" height="32"/>
+                                                <buttonCell key="cell" type="push" title="Toggle Control Points" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XIt-ob-469">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
+                                                <connections>
+                                                    <action selector="handleToggleMainControlPoints:" target="5gI-5U-AMq" id="2yf-A4-QDE"/>
+                                                </connections>
                                             </button>
                                         </subviews>
                                         <visibilityPriorities>
@@ -1365,7 +1368,7 @@
                         <outlet property="P2_Y_TextField" destination="Ttm-4J-gbO" id="nN7-L2-fJj"/>
                         <outlet property="P3_X_TextField" destination="qPu-oQ-AXP" id="5nz-5F-9gL"/>
                         <outlet property="P3_Y_TextField" destination="tBB-JA-2CE" id="eKN-QG-XSJ"/>
-                        <outlet property="graph_display" destination="wa0-8m-9fq" id="cgo-f9-Vho"/>
+                        <outlet property="display_view" destination="wa0-8m-9fq" id="GRv-Y6-vVa"/>
                         <outlet property="output_textview" destination="LY9-jO-oMM" id="2fO-FA-M62"/>
                     </connections>
                 </viewController>

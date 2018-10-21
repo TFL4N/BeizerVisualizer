@@ -10,7 +10,7 @@ import Cocoa
 
 class ViewController: NSViewController {
 
-    @IBOutlet var graph_display: DisplayView!
+    @IBOutlet var display_view: DisplayView!
     
     @IBOutlet var output_textview: NSTextView!
     
@@ -44,7 +44,7 @@ class ViewController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         
-        self.graph_display.document = self.document
+        self.display_view.document = self.document
         
         if self.needsBindings {
             self.needsBindings = false
@@ -102,7 +102,11 @@ class ViewController: NSViewController {
     }
 
     @IBAction func handleSquareGridPress(_ sender: Any?) {
-        self.document!.settings.display_bounds.x = (self.document!.settings.display_bounds.y * Double(self.graph_display.bounds.width)) / Double(self.graph_display.bounds.height)
+        self.document!.settings.display_bounds.x = (self.document!.settings.display_bounds.y * Double(self.display_view.bounds.width)) / Double(self.display_view.bounds.height)
+    }
+    
+    @IBAction func handleToggleMainControlPoints(_ sender: Any?) {
+        self.display_view.toggleMainControlPoints()
     }
 }
 
