@@ -102,6 +102,10 @@ class DisplayView: NSView {
         self.updateBezierCurve()
     }
     
+    public func squareGrid() {
+        self.settings.display_bounds.x = (self.settings.display_bounds.y * Double(self.bounds.width)) / Double(self.bounds.height)
+    }
+    
     private func enumerateControlPoints(_ f:(CAShapeLayer)->()) {
         let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer, self.q0_layer, self.q1_layer, self.q2_layer, self.r0_layer, self.r1_layer, self.b_layer]
         

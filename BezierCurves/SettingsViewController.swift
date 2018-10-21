@@ -56,4 +56,8 @@ class SettingsViewController: NSViewController {
                                          options: nil)
         }
     }
+    
+    @IBAction func handleSquareGridPress(_ sender: Any?) {
+        self.document!.main_view_controller.display_view.squareGrid()
+    }
 }

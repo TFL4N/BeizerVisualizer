@@ -100,10 +100,6 @@ class ViewController: NSViewController {
     @IBAction func handleShowSettingsPress(_ sender: Any?) {
         self.document?.showSettingsViewController()
     }
-
-    @IBAction func handleSquareGridPress(_ sender: Any?) {
-        self.document!.settings.display_bounds.x = (self.document!.settings.display_bounds.y * Double(self.display_view.bounds.width)) / Double(self.display_view.bounds.height)
-    }
     
     @IBAction func handleToggleMainControlPoints(_ sender: Any?) {
         self.display_view.toggleMainControlPoints()

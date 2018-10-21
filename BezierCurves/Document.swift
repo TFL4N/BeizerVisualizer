@@ -13,7 +13,12 @@ class Document: NSDocument {
     var bezier_curve: CubicBezierCurve = CubicBezierCurve()
     var settings: Settings = Settings()
     
-    weak var settings_window_controller: NSWindowController! = nil
+    var main_view_controller: ViewController {
+        return self.main_window_contrller.contentViewController! as! ViewController
+    }
+    
+    weak var main_window_contrller: NSWindowController!
+    weak var settings_window_controller: NSWindowController!
     
     override init() {
         super.init()
@@ -27,19 +32,26 @@ class Document: NSDocument {
     override func makeWindowControllers() {
         // Returns the Storyboard that contains your Document window.
         let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
-        let windowController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Document Window Controller")) as! NSWindowController
-        self.addWindowController(windowController)
+        self.main_window_contrller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Document Window Controller")) as! NSWindowController
+        self.addWindowController(self.main_window_contrller)
+        
+        self.createSettingsViewController()
     }
     
-    func showSettingsViewController() {
+    private func createSettingsViewController() {
         let storyboard = NSStoryboard(name: NSStoryboard.Name("Main"), bundle: nil)
         
         // create new settings window
+        self.settings_window_controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Settings Window Contoller")) as! NSWindowController
+        self.settings_window_controller.shouldCloseDocument = false
+        
+        self.addWindowController(self.settings_window_controller)
+        
+    }
+    
+    func showSettingsViewController() {
         if self.settings_window_controller == nil {
-            self.settings_window_controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("Settings Window Contoller")) as! NSWindowController
-            self.settings_window_controller.shouldCloseDocument = false
-            
-            self.addWindowController(self.settings_window_controller)
+            self.createSettingsViewController()
         }
         
         self.settings_window_controller.showWindow(self)
