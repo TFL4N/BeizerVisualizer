@@ -419,6 +419,17 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         return nil
     }
     
+    public override func scrollWheel(with event: NSEvent) {
+        var change = CGPoint(x: event.deltaX, y: event.deltaY)
+        
+        change.x /= self.x_scale
+        change.y /= self.y_scale
+        
+        change.x *= -1
+        
+        self.settings.origin_offset.cgPoint -= change
+    }
+    
     // MARK: Enumeration
     private func enumerateControlPoints(_ f:(CAShapeLayer)->()) {
         let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer, self.q0_layer, self.q1_layer, self.q2_layer, self.r0_layer, self.r1_layer, self.b_layer]
