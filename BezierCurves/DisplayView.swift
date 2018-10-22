@@ -66,6 +66,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         return self.layer!.bounds.height / CGFloat(self.settings.display_bounds.y)
     }
     
+    // MARK: Initializers
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         
@@ -100,6 +101,49 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.addGestureRecognizer(self.pan_gesture)
     }
     
+    private func createControlPoints() {
+        let circle_bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
+        
+        let createLayer = { () -> CAShapeLayer in
+            let path = CGPath(ellipseIn: circle_bounds, transform: nil)
+            
+            let layer = CAShapeLayer()
+            layer.bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
+            layer.path = path
+            layer.fillColor = CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
+            layer.zPosition = 1.0
+            
+            return layer
+        }
+        
+        self.p0_layer = createLayer()
+        self.p1_layer = createLayer()
+        self.p2_layer = createLayer()
+        self.p3_layer = createLayer()
+        
+        self.q0_layer = createLayer()
+        self.q1_layer = createLayer()
+        self.q2_layer = createLayer()
+        
+        self.r0_layer = createLayer()
+        self.r1_layer = createLayer()
+        
+        self.b_layer = createLayer()
+        
+        self.enumerateControlPoints { (cp) in
+            cp.isHidden = true
+            cp.actions = [
+                "position" : NSNull()
+            ]
+            self.layer!.addSublayer(cp)
+        }
+        
+        self.enumerateMainControlPoints { (cp) in
+            cp.isHidden = false
+        }
+    }
+    
+    // MARK: Public functions
     public func toggleMainControlPoints() {
         self.p0_layer.isHidden = !self.p0_layer.isHidden
         self.p1_layer.isHidden = !self.p1_layer.isHidden
@@ -113,6 +157,11 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.updateBezierCurve()
     }
     
+    public func squareGrid() {
+        self.settings.display_bounds.x = (self.settings.display_bounds.y * Double(self.bounds.width)) / Double(self.bounds.height)
+    }
+    
+    // MARK: Gestures
     private var selected_control_point: CAShapeLayer?
     private var control_point_translation: NSPoint = NSPoint.zero
     @objc private func handleControlPointPanGesture(_ gesture: NSPanGestureRecognizer) {
@@ -206,10 +255,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         return nil
     }
     
-    public func squareGrid() {
-        self.settings.display_bounds.x = (self.settings.display_bounds.y * Double(self.bounds.width)) / Double(self.bounds.height)
-    }
-    
+    // MARK: Enumeration
     private func enumerateControlPoints(_ f:(CAShapeLayer)->()) {
         let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer, self.q0_layer, self.q1_layer, self.q2_layer, self.r0_layer, self.r1_layer, self.b_layer]
         
@@ -226,48 +272,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         }
     }
     
-    private func createControlPoints() {
-        let circle_bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
-        
-        let createLayer = { () -> CAShapeLayer in
-            let path = CGPath(ellipseIn: circle_bounds, transform: nil)
-            
-            let layer = CAShapeLayer()
-            layer.bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
-            layer.path = path
-            layer.fillColor = CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
-            layer.zPosition = 1.0
-            
-            return layer
-        }
-        
-        self.p0_layer = createLayer()
-        self.p1_layer = createLayer()
-        self.p2_layer = createLayer()
-        self.p3_layer = createLayer()
-        
-        self.q0_layer = createLayer()
-        self.q1_layer = createLayer()
-        self.q2_layer = createLayer()
-        
-        self.r0_layer = createLayer()
-        self.r1_layer = createLayer()
-        
-        self.b_layer = createLayer()
-        
-        self.enumerateControlPoints { (cp) in
-            cp.isHidden = true
-            cp.actions = [
-                "position" : NSNull()
-            ]
-            self.layer!.addSublayer(cp)
-        }
-        
-        self.enumerateMainControlPoints { (cp) in
-            cp.isHidden = false
-        }
-    }
-    
+    // MARK: Point conversion
     private func getNormalizedPoint(_ point: CGPoint) -> CGPoint {
         var output = point
         
@@ -294,6 +299,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         return output
     }
     
+    // MARK: Update fuctions
     private func updateBezierCurve() {
         guard let document = self.document else {
             if self.curve_layer.superlayer != nil {
