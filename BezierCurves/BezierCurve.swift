@@ -7,12 +7,18 @@
 //
 
 import Foundation
+import BigNumber
 
 class CubicBezierCurve: NSObject, NSCoding {
+    public typealias GeneratorType = BezierCurve<Double>.GeneratorType
+    
     var p0: Point
     var p1: Point
     var p2: Point
     var p3: Point
+    
+    let curve_generator = BezierCurve<Double>()
+    
     
     override init() {
         self.p0 = Point()
@@ -41,6 +47,19 @@ class CubicBezierCurve: NSObject, NSCoding {
         }
         
         self.init(p0: p0, p1: p1, p2: p2, p3: p3)
+    }
+    
+    func getGeneratorFunctions() -> (q: (q0: GeneratorType, q1: GeneratorType, q2: GeneratorType), r: (r0: GeneratorType, r1: GeneratorType), b: GeneratorType) {
+            let p0 = self.p0.bigNumberPoint
+            let p1 = self.p1.bigNumberPoint
+            let p2 = self.p2.bigNumberPoint
+            let p3 = self.p3.bigNumberPoint
+        
+        let q_functions = self.curve_generator.getQPointFunctions(p0: p0, p1: p1, p2: p2, p3: p3)
+        let r_functions = self.curve_generator.getRPointFunctions(p0: p0, p1: p1, p2: p2, p3: p3)
+        let b_function = self.curve_generator.getBPointFunction(p0: p0, p1: p1, p2: p2, p3: p3)
+        
+        return (q_functions, r_functions, b_function)
     }
     
     func encode(with aCoder: NSCoder) {

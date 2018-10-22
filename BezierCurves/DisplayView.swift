@@ -39,12 +39,12 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     private var control_point_pan_gesture: NSPanGestureRecognizer!
     private var pan_gesture: NSPanGestureRecognizer!
     
-    private var isEnabled: Bool = true {
-        willSet {
-            self.control_point_pan_gesture?.isEnabled = newValue
-//            self.pan_gesture?.isEnabled = newValue
-        }
-    }
+//    private var isEnabled: Bool = true {
+//        willSet {
+//            self.control_point_pan_gesture?.isEnabled = newValue
+////            self.pan_gesture?.isEnabled = newValue
+//        }
+//    }
     
     var document: Document? = nil {
         willSet {
@@ -227,6 +227,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.updateGridLayer()
         self.updateAxisLayer()
         self.updateBezierCurve()
+        self.updateControlLines()
     }
     
     public func squareGrid() {
@@ -266,86 +267,42 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     private var isAnimating = false
     private let animation_duration: Double = 5.0
+    private var current_t: Double = 0.0
+    
     private func startAnimation() {
-        self.isEnabled = false
         
         self.showMajorControlPoints()
         self.showControlLines()
         
-        let curve = BezierCurve<Double>()
-        let p0 = self.curve.p0.bigNumberPoint
-        let p1 = self.curve.p1.bigNumberPoint
-        let p2 = self.curve.p2.bigNumberPoint
-        let p3 = self.curve.p3.bigNumberPoint
-        let q_functions = curve.getQPointFunctions(p0: p0, p1: p1, p2: p2, p3: p3)
-        let r_functions = curve.getRPointFunctions(p0: p0, p1: p1, p2: p2, p3: p3)
-        let b_function = curve.getBPointFunction(p0: p0, p1: p1, p2: p2, p3: p3)
-        
-        
-        //// p lines
-        let p0_denorm = self.getDenormalizedPoint(p0.cgPoint)
-        let p1_denorm = self.getDenormalizedPoint(p1.cgPoint)
-        let p2_denorm = self.getDenormalizedPoint(p2.cgPoint)
-        let p3_denorm = self.getDenormalizedPoint(p3.cgPoint)
-        
-        self.p01_line_layer.path = self.createLinePath(start: p0_denorm, end: p1_denorm)
-        self.p12_line_layer.path = self.createLinePath(start: p1_denorm, end: p2_denorm)
-        self.p23_line_layer.path = self.createLinePath(start: p2_denorm, end: p3_denorm)
-        
+     
         //// animate
-        let number_steps: Double = 1_000
-        let time_per_step = self.animation_duration / number_steps
-        let step_size = 1.0 / number_steps
-        
         self.isAnimating = true
-        var current_t: Double = 0.0
-        
-        func moveToStep(t: Double) {
-            // q
-            let q0 = self.getDenormalizedPoint(q_functions.q0(t).cgPoint)
-            let q1 = self.getDenormalizedPoint(q_functions.q1(t).cgPoint)
-            let q2 = self.getDenormalizedPoint(q_functions.q2(t).cgPoint)
-            
-            self.q0_layer.position = q0
-            self.q1_layer.position = q1
-            self.q2_layer.position = q2
-            
-            self.q01_line_layer.path = self.createLinePath(start: q0, end: q1)
-            self.q12_line_layer.path = self.createLinePath(start: q1, end: q2)
-            
-            // r
-            let r0 = self.getDenormalizedPoint(r_functions.r0(t).cgPoint)
-            let r1 = self.getDenormalizedPoint(r_functions.r1(t).cgPoint)
-            
-            self.r0_layer.position = r0
-            self.r1_layer.position = r1
-            
-            self.r01_line_layer.path = self.createLinePath(start: r0, end: r1)
-            
-            // b
-            let b = self.getDenormalizedPoint(b_function(t).cgPoint)
-            
-            self.b_layer.position = b
-            
-            /// loop
-            if self.isAnimating {
-                current_t += step_size
-                
-                if current_t > 1.0 {
-                    current_t = 0.0
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + time_per_step) {
-                    moveToStep(t: current_t)
-                }
-            }
-        }
         
         // begin animation
-        moveToStep(t: current_t)
+        updateControlLines()
+        self.continueAnimation()
+    }
+    
+    private func continueAnimation() {
+        if self.isAnimating {
+            let number_steps: Double = 1_000
+            let time_per_step = self.animation_duration / number_steps
+            let step_size = 1.0 / number_steps
+            
+            current_t += step_size
+            
+            if current_t > 1.0 {
+                current_t = 0.0
+            }
+            
+            self.updateControlLines()
+            DispatchQueue.main.asyncAfter(deadline: .now() + time_per_step) {
+                self.continueAnimation()
+            }
+        }
     }
     
     private func stopAnimation() {
-        self.isEnabled = true
         self.isAnimating = false
     }
     
@@ -541,6 +498,10 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.p2_layer.position = p2
         self.p3_layer.position = p3
         
+        self.p01_line_layer.path = self.createLinePath(start: p0, end: p1)
+        self.p12_line_layer.path = self.createLinePath(start: p1, end: p2)
+        self.p23_line_layer.path = self.createLinePath(start: p2, end: p3)
+        
         let curve_path = CGMutablePath()
         curve_path.move(to: p0)
         curve_path.addCurve(to: p3, control1: p1, control2: p2)
@@ -558,6 +519,41 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.curve_layer = curve_shape
         
         self.layer!.addSublayer(self.curve_layer)
+    }
+    
+    private func updateControlLines() {
+        let generators = self.curve.getGeneratorFunctions()
+        let q_functions = generators.q
+        let r_functions = generators.r
+        let b_function = generators.b
+        
+        let t = self.current_t
+        
+        // q
+        let q0 = self.getDenormalizedPoint(q_functions.q0(t).cgPoint)
+        let q1 = self.getDenormalizedPoint(q_functions.q1(t).cgPoint)
+        let q2 = self.getDenormalizedPoint(q_functions.q2(t).cgPoint)
+        
+        self.q0_layer.position = q0
+        self.q1_layer.position = q1
+        self.q2_layer.position = q2
+        
+        self.q01_line_layer.path = self.createLinePath(start: q0, end: q1)
+        self.q12_line_layer.path = self.createLinePath(start: q1, end: q2)
+        
+        // r
+        let r0 = self.getDenormalizedPoint(r_functions.r0(t).cgPoint)
+        let r1 = self.getDenormalizedPoint(r_functions.r1(t).cgPoint)
+        
+        self.r0_layer.position = r0
+        self.r1_layer.position = r1
+        
+        self.r01_line_layer.path = self.createLinePath(start: r0, end: r1)
+        
+        // b
+        let b = self.getDenormalizedPoint(b_function(t).cgPoint)
+        
+        self.b_layer.position = b
     }
     
     private func updateAxisLayer() {
