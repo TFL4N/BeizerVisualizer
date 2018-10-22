@@ -54,7 +54,6 @@
 		65215667217BDD2400EF3F9C /* BezierCurvesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezierCurvesUITests.swift; sourceTree = "<group>"; };
 		65215669217BDD2400EF3F9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		65215675217BE65100EF3F9C /* BezierCurve.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezierCurve.swift; sourceTree = "<group>"; };
-		65215678217BEAEA00EF3F9C /* BigNumber.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BigNumber.framework; path = ../../lib/BigNumber.framework; sourceTree = "<group>"; };
 		6521567A217BFE9200EF3F9C /* DisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayView.swift; sourceTree = "<group>"; };
 		6521567C217C28E700EF3F9C /* Point.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Point.swift; sourceTree = "<group>"; };
 		6521567E217C300B00EF3F9C /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
@@ -147,7 +146,6 @@
 		65215677217BEAEA00EF3F9C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				65215678217BEAEA00EF3F9C /* BigNumber.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

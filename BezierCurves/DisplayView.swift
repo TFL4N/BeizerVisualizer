@@ -17,13 +17,19 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     private var p1_layer: CAShapeLayer = CAShapeLayer()
     private var p2_layer: CAShapeLayer = CAShapeLayer()
     private var p3_layer: CAShapeLayer = CAShapeLayer()
+    private var p01_line_layer: CAShapeLayer = CAShapeLayer()
+    private var p12_line_layer: CAShapeLayer = CAShapeLayer()
+    private var p23_line_layer: CAShapeLayer = CAShapeLayer()
     
     private var q0_layer: CAShapeLayer = CAShapeLayer()
     private var q1_layer: CAShapeLayer = CAShapeLayer()
     private var q2_layer: CAShapeLayer = CAShapeLayer()
+    private var q01_line_layer: CAShapeLayer = CAShapeLayer()
+    private var q12_line_layer: CAShapeLayer = CAShapeLayer()
     
     private var r0_layer: CAShapeLayer = CAShapeLayer()
     private var r1_layer: CAShapeLayer = CAShapeLayer()
+    private var r01_line_layer: CAShapeLayer = CAShapeLayer()
     
     private var b_layer: CAShapeLayer = CAShapeLayer()
     
@@ -101,19 +107,10 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.addGestureRecognizer(self.pan_gesture)
     }
     
+    // MARK: Control Points
     private func createControlPoints() {
-        let circle_bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
-        
-        let createLayer = { () -> CAShapeLayer in
-            let path = CGPath(ellipseIn: circle_bounds, transform: nil)
-            
-            let layer = CAShapeLayer()
-            layer.bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
-            layer.path = path
-            layer.fillColor = CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
-            layer.zPosition = 1.0
-            
-            return layer
+        let createLayer = {
+            return self.createPointLayer(size: self.control_point_size, color: CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0))
         }
         
         self.p0_layer = createLayer()
@@ -140,6 +137,62 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         
         self.enumerateMainControlPoints { (cp) in
             cp.isHidden = false
+        }
+    }
+    
+    private func createControlLines() {
+        
+    }
+    
+    private func createPointLayer(size: CGFloat, color: CGColor) -> CAShapeLayer {
+        let circle_bounds = CGRect(x: 0.0, y: 0.0, width: size, height: size)
+        let path = CGPath(ellipseIn: circle_bounds, transform: nil)
+        
+        let layer = CAShapeLayer()
+        layer.bounds = CGRect(x: 0.0, y: 0.0, width: size, height: size)
+        layer.path = path
+        layer.fillColor = color
+        layer.zPosition = 2.0
+        
+        return layer
+    }
+    
+    private func createLinePath(start: CGPoint, end: CGPoint) -> CGMutablePath {
+        let path = CGMutablePath()
+        path.move(to: start)
+        path.addLine(to: end)
+        
+        return path
+    }
+    
+    private func createControlLines(color: CGColor) {
+        let createLine = { () -> CAShapeLayer in
+            let path = self.createLinePath(start: CGPoint.zero, end: CGPoint.zero)
+            
+            let layer = CAShapeLayer()
+            layer.path = path
+            layer.strokeColor = CGColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0)
+            layer.zPosition = 1.0
+            
+            return layer
+        }
+        
+        self.p01_line_layer = createLine()
+        self.p12_line_layer = createLine()
+        self.p23_line_layer = createLine()
+        
+        self.q01_line_layer = createLine()
+        self.q12_line_layer = createLine()
+        
+        self.r01_line_layer = createLine()
+        
+        
+        self.enumerateControlLines { (line_layer) in
+            line_layer.isHidden = true
+            line_layer.actions = [
+                "position" : NSNull()
+            ]
+            self.layer!.addSublayer(line_layer)
         }
     }
     
@@ -269,6 +322,14 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         
         for cp in control_points {
             f(cp)
+        }
+    }
+    
+    private func enumerateControlLines(_ f:(CAShapeLayer)->()) {
+        let lines = [self.p01_line_layer, self.p12_line_layer, self.p23_line_layer, self.q01_line_layer, self.q12_line_layer, self.q01_line_layer]
+        
+        for l in lines {
+            f(l)
         }
     }
     
