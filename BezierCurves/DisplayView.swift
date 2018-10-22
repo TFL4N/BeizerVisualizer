@@ -29,7 +29,8 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     private var control_point_size: CGFloat = 10.0
     
-    private var pan_gesture: NSPanGestureRecognizer! = nil
+    private var control_point_pan_gesture: NSPanGestureRecognizer!
+    private var pan_gesture: NSPanGestureRecognizer!
     
     var document: Document? = nil {
         willSet {
@@ -90,6 +91,10 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.refresh()
         self.createControlPoints()
         
+        self.control_point_pan_gesture = NSPanGestureRecognizer(target: self, action: #selector(handleControlPointPanGesture(_:)))
+        self.control_point_pan_gesture.delegate = self
+        self.addGestureRecognizer(self.control_point_pan_gesture)
+        
         self.pan_gesture = NSPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         self.pan_gesture.delegate = self
         self.addGestureRecognizer(self.pan_gesture)
@@ -110,7 +115,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     private var selected_control_point: CAShapeLayer?
     private var control_point_translation: NSPoint = NSPoint.zero
-    @objc private func handlePanGesture(_ gesture: NSPanGestureRecognizer) {
+    @objc private func handleControlPointPanGesture(_ gesture: NSPanGestureRecognizer) {
         switch gesture.state {
         case .began:
             self.selected_control_point = self.getSelectedControlPoint(gesture.location(in: self))
@@ -142,10 +147,42 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         }
     }
     
+    
+    private var pan_translation: NSPoint = NSPoint.zero
+    @objc private func handlePanGesture(_ gesture: NSPanGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            self.pan_translation = CGPoint.zero
+        case .changed:
+            let new_translation = gesture.translation(in: self)
+            var change = self.pan_translation - new_translation
+            self.pan_translation = new_translation
+            
+            change.x /= self.x_scale
+            change.y /= self.y_scale
+            
+            self.settings.origin_offset.cgPoint -= change
+        case .ended, .cancelled, .failed, .possible:
+            break
+        }
+    }
+    
     internal func gestureRecognizerShouldBegin(_ gestureRecognizer: NSGestureRecognizer) -> Bool {
-        print("Begin", gestureRecognizer.location(in: self), self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil)
-        print(self.p1_layer.frame)
-        return self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil
+        if gestureRecognizer == self.control_point_pan_gesture {
+            return self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil
+        } else if gestureRecognizer == self.pan_gesture {
+            return true
+        }
+        
+        return false
+    }
+    
+    internal func gestureRecognizer(_ gestureRecognizer: NSGestureRecognizer, shouldAttemptToRecognizeWith event: NSEvent) -> Bool {
+        if gestureRecognizer == self.pan_gesture {
+            return event.modifierFlags.contains(.option)
+        }
+        
+        return true
     }
     
     private func getSelectedControlPoint(_ location: NSPoint) -> CAShapeLayer? {
