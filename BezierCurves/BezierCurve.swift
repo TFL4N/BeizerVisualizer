@@ -17,8 +17,9 @@ class CubicBezierCurve: NSObject, NSCoding {
     var p2: Point
     var p3: Point
     
-    let curve_generator = BezierCurve<Double>()
+    @objc dynamic var t: Double
     
+    let curve_generator = BezierCurve<Double>()
     
     override init() {
         self.p0 = Point()
@@ -26,14 +27,18 @@ class CubicBezierCurve: NSObject, NSCoding {
         self.p2 = Point()
         self.p3 = Point()
         
+        self.t = 0.0
+        
         super.init()
     }
     
-    init(p0: Point, p1: Point, p2: Point, p3: Point) {
+    init(p0: Point, p1: Point, p2: Point, p3: Point, t: Double = 0.0) {
         self.p0 = p0
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
+        
+        self.t = max(0.0, min(t, 1.0))
         
         super.init()
     }
@@ -46,7 +51,10 @@ class CubicBezierCurve: NSObject, NSCoding {
                 return nil
         }
         
-        self.init(p0: p0, p1: p1, p2: p2, p3: p3)
+        let t = aDecoder.decodeDouble(forKey: "cubic_bezier_curve_t")
+        
+        self.init(p0: p0, p1: p1, p2: p2, p3: p3, t: t)
+        
     }
     
     func getGeneratorFunctions() -> (q: (q0: GeneratorType, q1: GeneratorType, q2: GeneratorType), r: (r0: GeneratorType, r1: GeneratorType), b: GeneratorType) {
@@ -67,6 +75,7 @@ class CubicBezierCurve: NSObject, NSCoding {
         aCoder.encode(self.p1, forKey: "cubic_bezier_curve_p1")
         aCoder.encode(self.p2, forKey: "cubic_bezier_curve_p2")
         aCoder.encode(self.p3, forKey: "cubic_bezier_curve_p3")
+        aCoder.encode(self.t, forKey: "cubic_bezier_curve_t")
     }
     
     func registerObserver(_ object: NSObject) {
@@ -74,6 +83,8 @@ class CubicBezierCurve: NSObject, NSCoding {
         self.p1.registerObserver(object)
         self.p2.registerObserver(object)
         self.p3.registerObserver(object)
+        
+        self.addObserver(object, forKeyPath: "t", options: .new, context: nil)
     }
     
     func unregisterObserver(_ object: NSObject) {
@@ -81,5 +92,7 @@ class CubicBezierCurve: NSObject, NSCoding {
         self.p1.unregisterObserver(object)
         self.p2.unregisterObserver(object)
         self.p3.unregisterObserver(object)
+        
+        self.removeObserver(object, forKeyPath: "t")
     }
 }

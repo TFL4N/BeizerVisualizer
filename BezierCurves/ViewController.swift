@@ -12,8 +12,6 @@ class ViewController: NSViewController {
 
     @IBOutlet var display_view: DisplayView!
     
-    @IBOutlet var output_textview: NSTextView!
-    
     @IBOutlet var P0_X_TextField: NSTextField!
     @IBOutlet var P0_Y_TextField: NSTextField!
     
@@ -26,8 +24,11 @@ class ViewController: NSViewController {
     @IBOutlet var P3_X_TextField: NSTextField!
     @IBOutlet var P3_Y_TextField: NSTextField!
     
+    @IBOutlet var T_TextField: NSTextField!
+    @IBOutlet var T_Slider: NSSlider!
+    
     private func enumerateTextFields(_ f: (NSTextField)->()) {
-        for t in [self.P0_X_TextField,self.P0_Y_TextField,self.P1_X_TextField,self.P1_Y_TextField,self.P2_X_TextField,self.P2_Y_TextField,self.P3_X_TextField,self.P3_Y_TextField] {
+        for t in [self.P0_X_TextField,self.P0_Y_TextField,self.P1_X_TextField,self.P1_Y_TextField,self.P2_X_TextField,self.P2_Y_TextField,self.P3_X_TextField,self.P3_Y_TextField,self.T_TextField] {
             f(t!)
         }
     }
@@ -94,6 +95,16 @@ class ViewController: NSViewController {
                                      to: curve.p3,
                                      withKeyPath: "y",
                                      options: nil)
+            
+            // T
+            self.T_TextField.bind(.value,
+                                  to: curve,
+                                  withKeyPath: "t",
+                                  options: nil)
+            self.T_Slider.bind(.value,
+                               to: curve,
+                               withKeyPath: "t",
+                               options: nil)
         }
     }
 
@@ -103,6 +114,10 @@ class ViewController: NSViewController {
     
     @IBAction func handleToggleMainControlPoints(_ sender: Any?) {
         self.display_view.toggleMainControlPoints()
+    }
+    
+    @IBAction func handleToggleControlLines(_ sender: Any?) {
+        self.display_view.toggleControlLines()
     }
     
     @IBAction func handleToggleAnimation(_ sender: Any?) {

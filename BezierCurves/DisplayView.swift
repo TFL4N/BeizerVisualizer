@@ -215,11 +215,18 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     private var isShowingMajorControlPoints = true
     public func toggleMainControlPoints() {
         if self.isShowingMajorControlPoints {
-            self.isShowingMajorControlPoints = false
             self.hideMajorControlPoints()
         } else {
-            self.isShowingMajorControlPoints = true
             self.showMajorControlPoints()
+        }
+    }
+    
+    private var isShowingControlLines = false
+    public func toggleControlLines() {
+        if self.isShowingControlLines {
+            self.hideControlLines()
+        } else {
+            self.showControlLines()
         }
     }
     
@@ -236,18 +243,21 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     // MARK: Animations
     public func showMajorControlPoints() {
+        self.isShowingMajorControlPoints = true
         self.enumerateMainControlPoints { (layer) in
             layer.isHidden = false
         }
     }
     
     public func hideMajorControlPoints() {
+        self.isShowingMajorControlPoints = false
         self.enumerateMainControlPoints { (layer) in
             layer.isHidden = true
         }
     }
     
     public func showControlLines() {
+        self.isShowingControlLines = true
         self.enumerateOtherControlPoints { (layer) in
             layer.isHidden = false
         }
@@ -257,6 +267,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     }
     
     public func hideControlLines() {
+        self.isShowingControlLines = false
         self.enumerateOtherControlPoints { (layer) in
             layer.isHidden = true
         }
@@ -267,8 +278,6 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     private var isAnimating = false
     private let animation_duration: Double = 5.0
-    private var current_t: Double = 0.0
-    
     private func startAnimation() {
         
         self.showMajorControlPoints()
@@ -289,13 +298,15 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
             let time_per_step = self.animation_duration / number_steps
             let step_size = 1.0 / number_steps
             
-            current_t += step_size
+            var new_t = self.curve.t
+            new_t += step_size
             
-            if current_t > 1.0 {
-                current_t = 0.0
+            if new_t > 1.0 {
+                new_t = 0.0
             }
             
-            self.updateControlLines()
+            // setting t will update display through self observing t
+            self.curve.t = new_t
             DispatchQueue.main.asyncAfter(deadline: .now() + time_per_step) {
                 self.continueAnimation()
             }
@@ -475,10 +486,6 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.p23_line_layer.path = self.createLinePath(start: self.curve.p2.cgPoint, end: self.curve.p3.cgPoint)
     }
     
-    private func updateOtherControlLines(withT t: Double) {
-        
-    }
-    
     private func updateBezierCurve() {
         guard let document = self.document else {
             if self.curve_layer.superlayer != nil {
@@ -527,7 +534,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         let r_functions = generators.r
         let b_function = generators.b
         
-        let t = self.current_t
+        let t = self.curve.t
         
         // q
         let q0 = self.getDenormalizedPoint(q_functions.q0(t).cgPoint)
