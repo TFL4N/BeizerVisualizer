@@ -38,6 +38,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     private var control_point_pan_gesture: NSPanGestureRecognizer!
     private var pan_gesture: NSPanGestureRecognizer!
+    private var pinch_gesture: NSMagnificationGestureRecognizer!
     
 //    private var isEnabled: Bool = true {
 //        willSet {
@@ -111,6 +112,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.createControlPoints()
         self.createControlLines()
         
+        // Gestures
         self.control_point_pan_gesture = NSPanGestureRecognizer(target: self, action: #selector(handleControlPointPanGesture(_:)))
         self.control_point_pan_gesture.delegate = self
         self.addGestureRecognizer(self.control_point_pan_gesture)
@@ -118,6 +120,10 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.pan_gesture = NSPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
         self.pan_gesture.delegate = self
         self.addGestureRecognizer(self.pan_gesture)
+        
+        self.pinch_gesture = NSMagnificationGestureRecognizer(target: self, action: #selector(handlePinchGesture(_:)))
+        self.pinch_gesture.delegate = self
+        self.addGestureRecognizer(self.pinch_gesture)
     }
     
     // MARK: Control Points
@@ -326,6 +332,22 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     }
     
     // MARK: Gestures
+    internal func gestureRecognizerShouldBegin(_ gestureRecognizer: NSGestureRecognizer) -> Bool {
+        if gestureRecognizer == self.control_point_pan_gesture {
+            return self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil
+        }
+        
+        return true
+    }
+    
+    internal func gestureRecognizer(_ gestureRecognizer: NSGestureRecognizer, shouldAttemptToRecognizeWith event: NSEvent) -> Bool {
+        if gestureRecognizer == self.pan_gesture {
+            return event.modifierFlags.contains(.option)
+        }
+        
+        return true
+    }
+    
     private var selected_control_point: CAShapeLayer?
     private var control_point_translation: NSPoint = NSPoint.zero
     @objc private func handleControlPointPanGesture(_ gesture: NSPanGestureRecognizer) {
@@ -360,6 +382,26 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         }
     }
     
+    private func getSelectedControlPoint(_ location: NSPoint) -> CAShapeLayer? {
+        guard self.bounds.contains(location) else {
+            return nil
+        }
+        
+        
+        let transformation = CGAffineTransform(translationX: self.control_point_size, y: self.control_point_size)
+        let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer]
+        for point in control_points {
+            if point.frame.contains(location) {
+                let local = location - point.position
+                if point.path!.contains(local, using: .winding, transform: transformation) {
+                    return point
+                }
+                return point
+            }
+        }
+        
+        return nil
+    }
     
     private var pan_translation: NSPoint = NSPoint.zero
     @objc private func handlePanGesture(_ gesture: NSPanGestureRecognizer) {
@@ -380,43 +422,27 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         }
     }
     
-    internal func gestureRecognizerShouldBegin(_ gestureRecognizer: NSGestureRecognizer) -> Bool {
-        if gestureRecognizer == self.control_point_pan_gesture {
-            return self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil
-        } else if gestureRecognizer == self.pan_gesture {
-            return true
-        }
-        
-        return false
-    }
-    
-    internal func gestureRecognizer(_ gestureRecognizer: NSGestureRecognizer, shouldAttemptToRecognizeWith event: NSEvent) -> Bool {
-        if gestureRecognizer == self.pan_gesture {
-            return event.modifierFlags.contains(.option)
-        }
-        
-        return true
-    }
-    
-    private func getSelectedControlPoint(_ location: NSPoint) -> CAShapeLayer? {
-        guard self.bounds.contains(location) else {
-            return nil
-        }
-        
-        
-        let transformation = CGAffineTransform(translationX: self.control_point_size, y: self.control_point_size)
-        let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer]
-        for point in control_points {
-            if point.frame.contains(location) {
-                let local = location - point.position
-                if point.path!.contains(local, using: .winding, transform: transformation) {
-                    return point
-                }
-                return point
+    private var pinch_original_bounds = CGPoint.zero
+    private var pinch_original_offset = CGPoint.zero
+    @objc private func handlePinchGesture(_ gesture: NSMagnificationGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            self.pinch_original_bounds = self.settings.display_bounds.cgPoint
+            self.pinch_original_offset = self.settings.origin_offset.cgPoint
+        case .changed:
+            let new_scale = 1.0 + gesture.magnification
+            
+            let new_bounds = self.pinch_original_bounds / new_scale
+            
+            if new_bounds.x >= 1.0 && new_bounds.y >= 1.0 {
+                let new_offset = self.pinch_original_offset / new_scale
+                
+                self.settings.display_bounds.cgPoint = new_bounds
+                self.settings.origin_offset.cgPoint = new_offset
             }
+        case .ended, .cancelled, .failed, .possible:
+            break
         }
-    
-        return nil
     }
     
     public override func scrollWheel(with event: NSEvent) {
@@ -617,58 +643,67 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         
         ///// x
         let x_interval = self.layer!.bounds.size.width / CGFloat(self.settings.display_bounds.x)
-        let x_origin = CGFloat(self.settings.origin_offset.x) * x_interval
-        var x_position: CGFloat = x_origin + x_interval
         
-        while x_position < self.layer!.bounds.size.width {
-            let start = CGPoint(x: x_position, y: 0)
-            let end = CGPoint(x: x_position, y: self.layer!.bounds.size.height)
+        if x_interval > 1.0 {
+            let x_origin = CGFloat(self.settings.origin_offset.x) * x_interval
+            var x_position: CGFloat = x_origin + x_interval
             
-            grid_path.move(to: start)
-            grid_path.addLine(to: end)
+            if x_position > 0 {
+                while x_position < self.layer!.bounds.size.width {
+                    let start = CGPoint(x: x_position, y: 0)
+                    let end = CGPoint(x: x_position, y: self.layer!.bounds.size.height)
+                    
+                    grid_path.move(to: start)
+                    grid_path.addLine(to: end)
+                    
+                    // loop
+                    x_position += x_interval
+                }
+            }
             
-            // loop
-            x_position += x_interval
-        }
-        
-        x_position = x_origin - x_interval
-        while x_position > 0 {
-            let start = CGPoint(x: x_position, y: 0)
-            let end = CGPoint(x: x_position, y: self.layer!.bounds.size.height)
-
-            grid_path.move(to: start)
-            grid_path.addLine(to: end)
-
-            // loop
-            x_position -= x_interval
+            x_position = x_origin - x_interval
+            while x_position > 0 {
+                let start = CGPoint(x: x_position, y: 0)
+                let end = CGPoint(x: x_position, y: self.layer!.bounds.size.height)
+                
+                grid_path.move(to: start)
+                grid_path.addLine(to: end)
+                
+                // loop
+                x_position -= x_interval
+            }
         }
         
         //// y
         let y_interval = self.layer!.bounds.size.height / CGFloat(self.settings.display_bounds.y)
-        let y_origin = CGFloat(self.settings.origin_offset.y) * y_interval
-        var y_position: CGFloat = y_origin + y_interval
-        
-        while y_position < self.layer!.bounds.size.height {
-            let start = CGPoint(x: 0, y: y_position)
-            let end = CGPoint(x: self.layer!.bounds.size.width, y:y_position)
+        if y_interval > 1.0 {
+            let y_origin = CGFloat(self.settings.origin_offset.y) * y_interval
+            var y_position: CGFloat = y_origin + y_interval
             
-            grid_path.move(to: start)
-            grid_path.addLine(to: end)
+            if y_position > 0 {
+                while y_position < self.layer!.bounds.size.height {
+                    let start = CGPoint(x: 0, y: y_position)
+                    let end = CGPoint(x: self.layer!.bounds.size.width, y:y_position)
+                    
+                    grid_path.move(to: start)
+                    grid_path.addLine(to: end)
+                    
+                    // loop
+                    y_position += y_interval
+                }
+            }
             
-            // loop
-            y_position += y_interval
-        }
-        
-        y_position = y_origin - y_interval
-        while y_position > 0 {
-            let start = CGPoint(x: 0, y: y_position)
-            let end = CGPoint(x: self.layer!.bounds.size.width, y:y_position)
-            
-            grid_path.move(to: start)
-            grid_path.addLine(to: end)
-            
-            // loop
-             y_position -= y_interval
+            y_position = y_origin - y_interval
+            while y_position > 0 {
+                let start = CGPoint(x: 0, y: y_position)
+                let end = CGPoint(x: self.layer!.bounds.size.width, y:y_position)
+                
+                grid_path.move(to: start)
+                grid_path.addLine(to: end)
+                
+                // loop
+                y_position -= y_interval
+            }
         }
         
         //// shape
