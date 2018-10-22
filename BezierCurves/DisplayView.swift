@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class DisplayView: NSView {
+class DisplayView: NSView, NSGestureRecognizerDelegate {
     private var axis_layer: CAShapeLayer = CAShapeLayer()
     private var grid_layer: CAShapeLayer = CAShapeLayer()
     private var curve_layer: CAShapeLayer = CAShapeLayer()
@@ -27,7 +27,9 @@ class DisplayView: NSView {
     
     private var b_layer: CAShapeLayer = CAShapeLayer()
     
-    private var control_point_size: CGFloat = 5.0
+    private var control_point_size: CGFloat = 10.0
+    
+    private var pan_gesture: NSPanGestureRecognizer! = nil
     
     var document: Document? = nil {
         willSet {
@@ -87,6 +89,10 @@ class DisplayView: NSView {
         
         self.refresh()
         self.createControlPoints()
+        
+        self.pan_gesture = NSPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        self.pan_gesture.delegate = self
+        self.addGestureRecognizer(self.pan_gesture)
     }
     
     public func toggleMainControlPoints() {
@@ -102,12 +108,81 @@ class DisplayView: NSView {
         self.updateBezierCurve()
     }
     
+    private var selected_control_point: CAShapeLayer?
+    private var control_point_translation: NSPoint = NSPoint.zero
+    @objc private func handlePanGesture(_ gesture: NSPanGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            self.selected_control_point = self.getSelectedControlPoint(gesture.location(in: self))
+            self.control_point_translation = NSPoint.zero
+        case .changed:
+            if let point = self.selected_control_point {
+                let new_translation = gesture.translation(in: self)
+                let change =  self.control_point_translation - new_translation
+                self.control_point_translation = new_translation
+            
+                if point == self.p0_layer {
+                    let new_position = self.p0_layer.position - change
+                    self.document!.bezier_curve.p0.cgPoint = self.getNormalizedPoint(new_position)
+                } else if point == self.p1_layer {
+                    let new_position = self.p1_layer.position - change
+                    self.document!.bezier_curve.p1.cgPoint = self.getNormalizedPoint(new_position)
+                } else if point == self.p2_layer {
+                    let new_position = self.p2_layer.position - change
+                    self.document!.bezier_curve.p2.cgPoint = self.getNormalizedPoint(new_position)
+                } else if point == self.p3_layer {
+                    let new_position = self.p3_layer.position - change
+                    self.document!.bezier_curve.p3.cgPoint = self.getNormalizedPoint(new_position)
+                }
+            }
+        case .ended, .cancelled, .failed:
+            self.selected_control_point = nil
+        case .possible:
+            break
+        }
+    }
+    
+    internal func gestureRecognizerShouldBegin(_ gestureRecognizer: NSGestureRecognizer) -> Bool {
+        print("Begin", gestureRecognizer.location(in: self), self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil)
+        print(self.p1_layer.frame)
+        return self.getSelectedControlPoint(gestureRecognizer.location(in: self)) != nil
+    }
+    
+    private func getSelectedControlPoint(_ location: NSPoint) -> CAShapeLayer? {
+        guard self.bounds.contains(location) else {
+            return nil
+        }
+        
+        
+        let transformation = CGAffineTransform(translationX: self.control_point_size, y: self.control_point_size)
+        let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer]
+        for point in control_points {
+            if point.frame.contains(location) {
+                let local = location - point.position
+                if point.path!.contains(local, using: .winding, transform: transformation) {
+                    return point
+                }
+                return point
+            }
+        }
+    
+        return nil
+    }
+    
     public func squareGrid() {
         self.settings.display_bounds.x = (self.settings.display_bounds.y * Double(self.bounds.width)) / Double(self.bounds.height)
     }
     
     private func enumerateControlPoints(_ f:(CAShapeLayer)->()) {
         let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer, self.q0_layer, self.q1_layer, self.q2_layer, self.r0_layer, self.r1_layer, self.b_layer]
+        
+        for cp in control_points {
+            f(cp)
+        }
+    }
+    
+    private func enumerateMainControlPoints(_ f:(CAShapeLayer)->()) {
+        let control_points = [self.p0_layer, self.p1_layer, self.p2_layer, self.p3_layer]
         
         for cp in control_points {
             f(cp)
@@ -121,6 +196,7 @@ class DisplayView: NSView {
             let path = CGPath(ellipseIn: circle_bounds, transform: nil)
             
             let layer = CAShapeLayer()
+            layer.bounds = CGRect(x: 0.0, y: 0.0, width: self.control_point_size, height: self.control_point_size)
             layer.path = path
             layer.fillColor = CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
             layer.zPosition = 1.0
@@ -143,13 +219,29 @@ class DisplayView: NSView {
         self.b_layer = createLayer()
         
         self.enumerateControlPoints { (cp) in
-            cp.setAffineTransform(CGAffineTransform(translationX: -self.control_point_size/2, y: -self.control_point_size/2))
             cp.isHidden = true
             cp.actions = [
                 "position" : NSNull()
             ]
             self.layer!.addSublayer(cp)
         }
+        
+        self.enumerateMainControlPoints { (cp) in
+            cp.isHidden = false
+        }
+    }
+    
+    private func getNormalizedPoint(_ point: CGPoint) -> CGPoint {
+        var output = point
+        
+        /// adjust scale
+        output.x /= self.x_scale
+        output.y /= self.y_scale
+        
+        // adjust origin
+        output -= self.settings.origin_offset.cgPoint
+        
+        return output
     }
     
     private func getDenormalizedPoint(_ point: Point) -> CGPoint {
@@ -161,7 +253,6 @@ class DisplayView: NSView {
         // adjust scale
         output.x *= self.x_scale
         output.y *= self.y_scale
-        
         
         return output
     }

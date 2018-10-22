@@ -13,7 +13,13 @@ class Point: NSObject, NSCoding {
     @objc dynamic var y: Double
     
     var cgPoint: CGPoint {
-        return CGPoint(x: self.x, y: self.y)
+        get {
+            return CGPoint(x: self.x, y: self.y)
+        }
+        set {
+            self.x = Double(newValue.x)
+            self.y = Double(newValue.y)
+        }
     }
     
     override init() {
@@ -71,8 +77,21 @@ class Point: NSObject, NSCoding {
 
 
 extension CGPoint {
+    public static func +(lhs: CGPoint, rhs: CGPoint) -> CGPoint {
+        return CGPoint(x: lhs.x+rhs.x, y: lhs.y+rhs.y)
+    }
+    
     public static func +=(lhs: inout CGPoint, rhs: CGPoint) {
         lhs.x += rhs.x
         lhs.y += rhs.y
+    }
+    
+    public static func -(lhs: CGPoint, rhs: CGPoint) -> CGPoint {
+        return CGPoint(x: lhs.x-rhs.x, y: lhs.y-rhs.y)
+    }
+    
+    public static func -=(lhs: inout CGPoint, rhs: CGPoint) {
+        lhs.x -= rhs.x
+        lhs.y -= rhs.y
     }
 }
