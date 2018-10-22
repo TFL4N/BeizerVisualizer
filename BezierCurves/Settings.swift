@@ -22,6 +22,8 @@ class Settings: NSObject, NSCoding {
     @objc dynamic var curve_line_width: Double = 1.0
     @objc dynamic var curve_line_color: NSColor = NSColor.black
     
+    @objc dynamic var t: Double = 0.0
+    
     override init() {
         super.init()
     }
@@ -60,6 +62,10 @@ class Settings: NSObject, NSCoding {
         }
         
         self.curve_line_color = aDecoder.decodeObject(forKey: "settings_curve_line_color") as? NSColor ?? NSColor.black
+        
+        /// control points
+        self.t = aDecoder.decodeDouble(forKey: "settings_t")
+        self.t = max(0, min(self.t, 1.0))
     }
     
     func encode(with aCoder: NSCoder) {
@@ -75,6 +81,8 @@ class Settings: NSObject, NSCoding {
         
         aCoder.encode(self.curve_line_width, forKey: "settings_curve_line_width")
         aCoder.encode(self.curve_line_color, forKey: "settings_curve_line_color")
+        
+        aCoder.encode(self.t, forKey: "settings_t")
     }
     
     func registerObserver(_ object: NSObject) {

@@ -104,6 +104,10 @@ class ViewController: NSViewController {
     @IBAction func handleToggleMainControlPoints(_ sender: Any?) {
         self.display_view.toggleMainControlPoints()
     }
+    
+    @IBAction func handleToggleAnimation(_ sender: Any?) {
+        self.display_view.toggleAnimation()
+    }
 }
 
 extension NumberFormatter {

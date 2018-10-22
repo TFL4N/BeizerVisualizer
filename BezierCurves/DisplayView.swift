@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import BigNumber
 
 class DisplayView: NSView, NSGestureRecognizerDelegate {
     private var axis_layer: CAShapeLayer = CAShapeLayer()
@@ -38,6 +39,13 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     private var control_point_pan_gesture: NSPanGestureRecognizer!
     private var pan_gesture: NSPanGestureRecognizer!
     
+    private var isEnabled: Bool = true {
+        willSet {
+            self.control_point_pan_gesture?.isEnabled = newValue
+//            self.pan_gesture?.isEnabled = newValue
+        }
+    }
+    
     var document: Document? = nil {
         willSet {
             if let document = self.document {
@@ -54,6 +62,10 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
             
             self.refresh()
         }
+    }
+    
+    var curve: CubicBezierCurve {
+        return self.document?.bezier_curve ?? CubicBezierCurve()
     }
     
     var settings: Settings {
@@ -97,6 +109,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         
         self.refresh()
         self.createControlPoints()
+        self.createControlLines()
         
         self.control_point_pan_gesture = NSPanGestureRecognizer(target: self, action: #selector(handleControlPointPanGesture(_:)))
         self.control_point_pan_gesture.delegate = self
@@ -109,23 +122,24 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     // MARK: Control Points
     private func createControlPoints() {
-        let createLayer = {
-            return self.createPointLayer(size: self.control_point_size, color: CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0))
-        }
+        let main_color = CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
+        let q_color = CGColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+        let r_color = CGColor(red: 1.0, green: 165.0/255.0, blue: 0.0, alpha: 1.0)
+        let b_color = CGColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0)
         
-        self.p0_layer = createLayer()
-        self.p1_layer = createLayer()
-        self.p2_layer = createLayer()
-        self.p3_layer = createLayer()
+        self.p0_layer = self.createPointLayer(size: self.control_point_size, color: main_color)
+        self.p1_layer = self.createPointLayer(size: self.control_point_size, color: main_color)
+        self.p2_layer = self.createPointLayer(size: self.control_point_size, color: main_color)
+        self.p3_layer = self.createPointLayer(size: self.control_point_size, color: main_color)
         
-        self.q0_layer = createLayer()
-        self.q1_layer = createLayer()
-        self.q2_layer = createLayer()
+        self.q0_layer = self.createPointLayer(size: self.control_point_size, color: q_color)
+        self.q1_layer = self.createPointLayer(size: self.control_point_size, color: q_color)
+        self.q2_layer = self.createPointLayer(size: self.control_point_size, color: q_color)
         
-        self.r0_layer = createLayer()
-        self.r1_layer = createLayer()
+        self.r0_layer = self.createPointLayer(size: self.control_point_size, color: r_color)
+        self.r1_layer = self.createPointLayer(size: self.control_point_size, color: r_color)
         
-        self.b_layer = createLayer()
+        self.b_layer = self.createPointLayer(size: self.control_point_size, color: b_color)
         
         self.enumerateControlPoints { (cp) in
             cp.isHidden = true
@@ -138,10 +152,6 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.enumerateMainControlPoints { (cp) in
             cp.isHidden = false
         }
-    }
-    
-    private func createControlLines() {
-        
     }
     
     private func createPointLayer(size: CGFloat, color: CGColor) -> CAShapeLayer {
@@ -165,26 +175,31 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         return path
     }
     
-    private func createControlLines(color: CGColor) {
-        let createLine = { () -> CAShapeLayer in
+    private func createControlLines() {
+        let createLine = { (color: CGColor) -> CAShapeLayer in
             let path = self.createLinePath(start: CGPoint.zero, end: CGPoint.zero)
             
             let layer = CAShapeLayer()
             layer.path = path
-            layer.strokeColor = CGColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0)
+            layer.lineWidth = CGFloat(self.settings.curve_line_width)
+            layer.strokeColor = color
             layer.zPosition = 1.0
             
             return layer
         }
         
-        self.p01_line_layer = createLine()
-        self.p12_line_layer = createLine()
-        self.p23_line_layer = createLine()
+        let p_line_color = CGColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+        let q_line_color = CGColor(red: 1.0, green: 165.0/255.0, blue: 0.0, alpha: 1.0)
+        let r_line_color = CGColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0)
         
-        self.q01_line_layer = createLine()
-        self.q12_line_layer = createLine()
+        self.p01_line_layer = createLine(p_line_color)
+        self.p12_line_layer = createLine(p_line_color)
+        self.p23_line_layer = createLine(p_line_color)
         
-        self.r01_line_layer = createLine()
+        self.q01_line_layer = createLine(q_line_color)
+        self.q12_line_layer = createLine(q_line_color)
+        
+        self.r01_line_layer = createLine(r_line_color)
         
         
         self.enumerateControlLines { (line_layer) in
@@ -197,11 +212,15 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     }
     
     // MARK: Public functions
+    private var isShowingMajorControlPoints = true
     public func toggleMainControlPoints() {
-        self.p0_layer.isHidden = !self.p0_layer.isHidden
-        self.p1_layer.isHidden = !self.p1_layer.isHidden
-        self.p2_layer.isHidden = !self.p2_layer.isHidden
-        self.p3_layer.isHidden = !self.p3_layer.isHidden
+        if self.isShowingMajorControlPoints {
+            self.isShowingMajorControlPoints = false
+            self.hideMajorControlPoints()
+        } else {
+            self.isShowingMajorControlPoints = true
+            self.showMajorControlPoints()
+        }
     }
     
     public func refresh() {
@@ -212,6 +231,130 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     
     public func squareGrid() {
         self.settings.display_bounds.x = (self.settings.display_bounds.y * Double(self.bounds.width)) / Double(self.bounds.height)
+    }
+    
+    // MARK: Animations
+    public func showMajorControlPoints() {
+        self.enumerateMainControlPoints { (layer) in
+            layer.isHidden = false
+        }
+    }
+    
+    public func hideMajorControlPoints() {
+        self.enumerateMainControlPoints { (layer) in
+            layer.isHidden = true
+        }
+    }
+    
+    public func showControlLines() {
+        self.enumerateOtherControlPoints { (layer) in
+            layer.isHidden = false
+        }
+        self.enumerateControlLines { (layer) in
+            layer.isHidden = false
+        }
+    }
+    
+    public func hideControlLines() {
+        self.enumerateOtherControlPoints { (layer) in
+            layer.isHidden = true
+        }
+        self.enumerateControlLines { (layer) in
+            layer.isHidden = true
+        }
+    }
+    
+    private var isAnimating = false
+    private let animation_duration: Double = 5.0
+    private func startAnimation() {
+        self.isEnabled = false
+        
+        self.showMajorControlPoints()
+        self.showControlLines()
+        
+        let curve = BezierCurve<Double>()
+        let p0 = self.curve.p0.bigNumberPoint
+        let p1 = self.curve.p1.bigNumberPoint
+        let p2 = self.curve.p2.bigNumberPoint
+        let p3 = self.curve.p3.bigNumberPoint
+        let q_functions = curve.getQPointFunctions(p0: p0, p1: p1, p2: p2, p3: p3)
+        let r_functions = curve.getRPointFunctions(p0: p0, p1: p1, p2: p2, p3: p3)
+        let b_function = curve.getBPointFunction(p0: p0, p1: p1, p2: p2, p3: p3)
+        
+        
+        //// p lines
+        let p0_denorm = self.getDenormalizedPoint(p0.cgPoint)
+        let p1_denorm = self.getDenormalizedPoint(p1.cgPoint)
+        let p2_denorm = self.getDenormalizedPoint(p2.cgPoint)
+        let p3_denorm = self.getDenormalizedPoint(p3.cgPoint)
+        
+        self.p01_line_layer.path = self.createLinePath(start: p0_denorm, end: p1_denorm)
+        self.p12_line_layer.path = self.createLinePath(start: p1_denorm, end: p2_denorm)
+        self.p23_line_layer.path = self.createLinePath(start: p2_denorm, end: p3_denorm)
+        
+        //// animate
+        let number_steps: Double = 1_000
+        let time_per_step = self.animation_duration / number_steps
+        let step_size = 1.0 / number_steps
+        
+        self.isAnimating = true
+        var current_t: Double = 0.0
+        
+        func moveToStep(t: Double) {
+            // q
+            let q0 = self.getDenormalizedPoint(q_functions.q0(t).cgPoint)
+            let q1 = self.getDenormalizedPoint(q_functions.q1(t).cgPoint)
+            let q2 = self.getDenormalizedPoint(q_functions.q2(t).cgPoint)
+            
+            self.q0_layer.position = q0
+            self.q1_layer.position = q1
+            self.q2_layer.position = q2
+            
+            self.q01_line_layer.path = self.createLinePath(start: q0, end: q1)
+            self.q12_line_layer.path = self.createLinePath(start: q1, end: q2)
+            
+            // r
+            let r0 = self.getDenormalizedPoint(r_functions.r0(t).cgPoint)
+            let r1 = self.getDenormalizedPoint(r_functions.r1(t).cgPoint)
+            
+            self.r0_layer.position = r0
+            self.r1_layer.position = r1
+            
+            self.r01_line_layer.path = self.createLinePath(start: r0, end: r1)
+            
+            // b
+            let b = self.getDenormalizedPoint(b_function(t).cgPoint)
+            
+            self.b_layer.position = b
+            
+            /// loop
+            if self.isAnimating {
+                current_t += step_size
+                
+                if current_t > 1.0 {
+                    current_t = 0.0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + time_per_step) {
+                    moveToStep(t: current_t)
+                }
+            }
+        }
+        
+        // begin animation
+        moveToStep(t: current_t)
+    }
+    
+    private func stopAnimation() {
+        self.isEnabled = true
+        self.isAnimating = false
+    }
+    
+    public func toggleAnimation() {
+        if self.isAnimating {
+            self.stopAnimation()
+        } else {
+            self.startAnimation()
+        }
     }
     
     // MARK: Gestures
@@ -325,8 +468,16 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         }
     }
     
+    private func enumerateOtherControlPoints(_ f:(CAShapeLayer)->()) {
+        let control_points = [self.q0_layer, self.q1_layer, self.q2_layer, self.r0_layer, self.r1_layer, self.b_layer]
+        
+        for cp in control_points {
+            f(cp)
+        }
+    }
+    
     private func enumerateControlLines(_ f:(CAShapeLayer)->()) {
-        let lines = [self.p01_line_layer, self.p12_line_layer, self.p23_line_layer, self.q01_line_layer, self.q12_line_layer, self.q01_line_layer]
+        let lines = [self.p01_line_layer, self.p12_line_layer, self.p23_line_layer, self.q01_line_layer, self.q12_line_layer, self.r01_line_layer]
         
         for l in lines {
             f(l)
@@ -347,8 +498,8 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         return output
     }
     
-    private func getDenormalizedPoint(_ point: Point) -> CGPoint {
-        var output = point.cgPoint
+    private func getDenormalizedPoint(_ point: CGPoint) -> CGPoint {
+        var output = point
     
         // adjust origin
         output += self.settings.origin_offset.cgPoint
@@ -361,6 +512,16 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     }
     
     // MARK: Update fuctions
+    private func updateMainControlLines() {
+        self.p01_line_layer.path = self.createLinePath(start: self.curve.p0.cgPoint, end: self.curve.p1.cgPoint)
+        self.p12_line_layer.path = self.createLinePath(start: self.curve.p1.cgPoint, end: self.curve.p2.cgPoint)
+        self.p23_line_layer.path = self.createLinePath(start: self.curve.p2.cgPoint, end: self.curve.p3.cgPoint)
+    }
+    
+    private func updateOtherControlLines(withT t: Double) {
+        
+    }
+    
     private func updateBezierCurve() {
         guard let document = self.document else {
             if self.curve_layer.superlayer != nil {
@@ -370,10 +531,10 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
             return
         }
         
-        let p0 = self.getDenormalizedPoint(document.bezier_curve.p0)
-        let p1 = self.getDenormalizedPoint(document.bezier_curve.p1)
-        let p2 = self.getDenormalizedPoint(document.bezier_curve.p2)
-        let p3 = self.getDenormalizedPoint(document.bezier_curve.p3)
+        let p0 = self.getDenormalizedPoint(document.bezier_curve.p0.cgPoint)
+        let p1 = self.getDenormalizedPoint(document.bezier_curve.p1.cgPoint)
+        let p2 = self.getDenormalizedPoint(document.bezier_curve.p2.cgPoint)
+        let p3 = self.getDenormalizedPoint(document.bezier_curve.p3.cgPoint)
         
         self.p0_layer.position = p0
         self.p1_layer.position = p1

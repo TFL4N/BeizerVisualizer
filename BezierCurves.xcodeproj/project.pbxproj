@@ -19,6 +19,7 @@
 		6521567D217C28E700EF3F9C /* Point.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521567C217C28E700EF3F9C /* Point.swift */; };
 		6521567F217C300B00EF3F9C /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6521567E217C300B00EF3F9C /* SettingsViewController.swift */; };
 		65215681217C301500EF3F9C /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65215680217C301500EF3F9C /* Settings.swift */; };
+		6554BDAB217E4DE5007C5F5E /* BigNumber.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6554BDA1217E4DB3007C5F5E /* BigNumber.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +36,34 @@
 			proxyType = 1;
 			remoteGlobalIDString = 65215643217BDD2300EF3F9C;
 			remoteInfo = BezierCurves;
+		};
+		6554BDA0217E4DB3007C5F5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6533D1A81F48FADD00831742;
+			remoteInfo = BigNumber;
+		};
+		6554BDA2217E4DB3007C5F5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6533D1B11F48FADD00831742;
+			remoteInfo = BigNumberTests;
+		};
+		6554BDA4217E4DB3007C5F5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6533EF9A2058529A00BC586F;
+			remoteInfo = "Install BigNumber";
+		};
+		6554BDA6217E4DBF007C5F5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 6533D1A71F48FADD00831742;
+			remoteInfo = BigNumber;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -58,6 +87,7 @@
 		6521567C217C28E700EF3F9C /* Point.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Point.swift; sourceTree = "<group>"; };
 		6521567E217C300B00EF3F9C /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		65215680217C301500EF3F9C /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BigNumber.xcodeproj; path = ../project_euler/utils/big_int/BigNumber/BigNumber.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6554BDAB217E4DE5007C5F5E /* BigNumber.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +119,7 @@
 		6521563B217BDD2300EF3F9C = {
 			isa = PBXGroup;
 			children = (
+				6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */,
 				65215646217BDD2300EF3F9C /* BezierCurves */,
 				6521565B217BDD2400EF3F9C /* BezierCurvesTests */,
 				65215666217BDD2400EF3F9C /* BezierCurvesUITests */,
@@ -150,6 +182,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		6554BD9B217E4DB2007C5F5E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6554BDA1217E4DB3007C5F5E /* BigNumber.framework */,
+				6554BDA3217E4DB3007C5F5E /* BigNumberTests.xctest */,
+				6554BDA5217E4DB3007C5F5E /* BigNumber.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -164,6 +206,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				6554BDA7217E4DBF007C5F5E /* PBXTargetDependency */,
 			);
 			name = BezierCurves;
 			productName = BezierCurves;
@@ -245,6 +288,12 @@
 			mainGroup = 6521563B217BDD2300EF3F9C;
 			productRefGroup = 65215645217BDD2300EF3F9C /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 6554BD9B217E4DB2007C5F5E /* Products */;
+					ProjectRef = 6554BD9A217E4DB2007C5F5E /* BigNumber.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				65215643217BDD2300EF3F9C /* BezierCurves */,
@@ -253,6 +302,30 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		6554BDA1217E4DB3007C5F5E /* BigNumber.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = BigNumber.framework;
+			remoteRef = 6554BDA0217E4DB3007C5F5E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6554BDA3217E4DB3007C5F5E /* BigNumberTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = BigNumberTests.xctest;
+			remoteRef = 6554BDA2217E4DB3007C5F5E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6554BDA5217E4DB3007C5F5E /* BigNumber.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = BigNumber.framework;
+			remoteRef = 6554BDA4217E4DB3007C5F5E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		65215642217BDD2300EF3F9C /* Resources */ = {
@@ -324,6 +397,11 @@
 			isa = PBXTargetDependency;
 			target = 65215643217BDD2300EF3F9C /* BezierCurves */;
 			targetProxy = 65215664217BDD2400EF3F9C /* PBXContainerItemProxy */;
+		};
+		6554BDA7217E4DBF007C5F5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BigNumber;
+			targetProxy = 6554BDA6217E4DBF007C5F5E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

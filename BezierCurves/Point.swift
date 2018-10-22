@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import BigNumber
 
 class Point: NSObject, NSCoding {
     @objc dynamic var x: Double
@@ -19,6 +20,17 @@ class Point: NSObject, NSCoding {
         set {
             self.x = Double(newValue.x)
             self.y = Double(newValue.y)
+        }
+    }
+    
+    var bigNumberPoint: BigNumber.Point<Double> {
+        get {
+            return BigNumber.Point(x: self.x, y: self.y)
+        }
+        
+        set {
+            self.x = newValue.x
+            self.y = newValue.y
         }
     }
     
