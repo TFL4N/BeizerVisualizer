@@ -566,17 +566,16 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
     }
     
     private func updateControlLines() {
-        let generators = self.curve.getGeneratorFunctions()
-        let q_functions = generators.q
-        let r_functions = generators.r
-        let b_function = generators.b
-        
-        let t = self.curve.t
+        let points = BezierCurve<Double>.getControlPoints(t: self.curve.t,
+                                                  p0: self.curve.p0.bigNumberPoint,
+                                                  p1: self.curve.p1.bigNumberPoint,
+                                                  p2: self.curve.p2.bigNumberPoint,
+                                                  p3: self.curve.p3.bigNumberPoint)
         
         // q
-        let q0 = self.getDenormalizedPoint(q_functions.q0(t).cgPoint)
-        let q1 = self.getDenormalizedPoint(q_functions.q1(t).cgPoint)
-        let q2 = self.getDenormalizedPoint(q_functions.q2(t).cgPoint)
+        let q0 = self.getDenormalizedPoint(points.q.0.cgPoint)
+        let q1 = self.getDenormalizedPoint(points.q.1.cgPoint)
+        let q2 = self.getDenormalizedPoint(points.q.2.cgPoint)
         
         self.q0_layer.position = q0
         self.q1_layer.position = q1
@@ -586,8 +585,8 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.q12_line_layer.path = self.createLinePath(start: q1, end: q2)
         
         // r
-        let r0 = self.getDenormalizedPoint(r_functions.r0(t).cgPoint)
-        let r1 = self.getDenormalizedPoint(r_functions.r1(t).cgPoint)
+        let r0 = self.getDenormalizedPoint(points.r.0.cgPoint)
+        let r1 = self.getDenormalizedPoint(points.r.1.cgPoint)
         
         self.r0_layer.position = r0
         self.r1_layer.position = r1
@@ -595,7 +594,7 @@ class DisplayView: NSView, NSGestureRecognizerDelegate {
         self.r01_line_layer.path = self.createLinePath(start: r0, end: r1)
         
         // b
-        let b = self.getDenormalizedPoint(b_function(t).cgPoint)
+        let b = self.getDenormalizedPoint(points.b.cgPoint)
         
         self.b_layer.position = b
     }
