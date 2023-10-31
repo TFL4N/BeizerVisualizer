@@ -6,7 +6,7 @@ A macOS application for visualizing how a Bézier Curve is constructed
 ## Features
 * Drag and drop control points
 * Animation shows intermediary lines used to construct
-* Uses GMP (GNU Multiple Precision) to calculate positions
+* Uses GMP (GNU Multiple Precision) and GNU MPFR (Multiple Precisoin Floating-point) to calculate positions
 * Utilizes NSDocument to archive curves
 
 ## "I actually managed to build and run your application"
